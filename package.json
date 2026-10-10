@@ -1,0 +1,21 @@
+{
+  "name": "extraxie",
+  "version": "1.0.0",
+  "description": "ExtraXie has welcoming system which automatically Welcomes members to the server. This bot also has Level-up system with a proper leaderboard of the members who are in the top lists. This bot shows messege counts and voice hours also.",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run check",
+    "start": "node index.js",
+    "check": "node --check index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://localhost:26831/wantedpebkkk/ExtraXie"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.27.0"
+  }
+}
