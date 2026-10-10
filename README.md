@@ -36,6 +36,7 @@ ExtraXie is a Discord bot with:
 - `!stats` or `!rank` → Show stats (level/xp/messages/voice/afk)
 - `!stats @member` → Show another member's stats
 - `!leaderboard [xp|messages|voice|afk|afktime]` → Leaderboards
+- `!levelboard` / `!lvlboard` → XP level board with progress bars
 - `!afk [reason]` → Mark yourself AFK
 - `!afkoff` → Close AFK manually
 - `!serverinfo` → Server details

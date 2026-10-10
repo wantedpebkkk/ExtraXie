@@ -144,6 +144,13 @@ function parseEmbedColor(input) {
   return Number.parseInt(cleaned, 16);
 }
 
+function buildXpProgressBar(currentXp, requiredXp, size = 10) {
+  const safeRequired = Math.max(1, requiredXp);
+  const ratio = Math.max(0, Math.min(1, currentXp / safeRequired));
+  const filled = Math.round(ratio * size);
+  return `${'█'.repeat(filled)}${'░'.repeat(Math.max(0, size - filled))}`;
+}
+
 function buildLeaderboardEntries(sortBy) {
   return Object.entries(state.members)
     .sort((a, b) => {
@@ -208,6 +215,30 @@ function createLeaderboardEmbed(guild, sortBy, entries) {
     .setTitle(`Leaderboard • ${labels[sortBy]}`)
     .setDescription(lines.length ? lines.join('\n') : 'No data yet.')
     .setColor(0x00a2ff)
+    .setTimestamp(new Date());
+}
+
+function createLevelBoardEmbed(guild, entries) {
+  const medal = ['🥇', '🥈', '🥉'];
+
+  const lines = entries.map(([memberId, stats], index) => {
+    const member = guild.members.cache.get(memberId);
+    const displayName = member ? member.displayName : `Unknown (${memberId})`;
+    const neededXp = xpForNextLevel(stats.level);
+    const progressBar = buildXpProgressBar(stats.xp, neededXp);
+    const rankLabel = medal[index] || `#${index + 1}`;
+
+    return [
+      `${rankLabel} **${displayName}**`,
+      `Lvl ${stats.level} • ${stats.xp}/${neededXp} XP`,
+      `\`${progressBar}\``,
+    ].join('\n');
+  });
+
+  return new EmbedBuilder()
+    .setTitle('Level Board • XP Rankings')
+    .setDescription(lines.length ? lines.join('\n\n') : 'No data yet.')
+    .setColor(0x5865f2)
     .setTimestamp(new Date());
 }
 
@@ -673,6 +704,7 @@ client.on('messageCreate', async (message) => {
         [
           `\`${prefix}stats [@member]\``,
           `\`${prefix}leaderboard [xp|messages|voice|afk|afktime]\``,
+          `\`${prefix}levelboard\` or \`${prefix}lvlboard\``,
           `\`${prefix}afk [reason]\` / \`${prefix}afkoff\``,
           `\`${prefix}serverinfo\`, \`${prefix}roleinfo [@role|id|name]\``,
           `\`${prefix}avatar [@member]\`, \`${prefix}userinfo [@member]\``,
@@ -753,6 +785,14 @@ client.on('messageCreate', async (message) => {
     await message.guild.members.fetch();
     const entries = buildLeaderboardEntries(sortBy);
     const embed = createLeaderboardEmbed(message.guild, sortBy, entries);
+    await message.channel.send({ embeds: [embed] });
+    return;
+  }
+
+  if (normalized === 'levelboard' || normalized === 'lvlboard' || normalized === 'lblevel') {
+    await message.guild.members.fetch();
+    const entries = buildLeaderboardEntries('xp');
+    const embed = createLevelBoardEmbed(message.guild, entries);
     await message.channel.send({ embeds: [embed] });
     return;
   }
