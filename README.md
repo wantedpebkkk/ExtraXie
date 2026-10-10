@@ -28,6 +28,7 @@ ExtraXie is a Discord bot with:
 - `!leaderboard` or `!lb` → XP leaderboard
 - `!leaderboard messages` → Message leaderboard
 - `!leaderboard voice` → Voice-hours leaderboard
+- `!embed Title | Description | #5865F2` → Send an embed message (Manage Messages required, color optional)
 
 ## Data storage
 

@@ -90,6 +90,19 @@ function formatVoiceHours(seconds) {
   return (seconds / 3600).toFixed(2);
 }
 
+function parseEmbedColor(input) {
+  if (!input) {
+    return 0x5865f2;
+  }
+
+  const cleaned = input.trim().replace(/^#/, '');
+  if (!/^[0-9a-fA-F]{6}$/.test(cleaned)) {
+    return null;
+  }
+
+  return Number.parseInt(cleaned, 16);
+}
+
 function createLeaderboardEmbed(guild, sortBy, entries) {
   const labels = {
     xp: 'XP',
@@ -199,8 +212,14 @@ client.on('messageCreate', async (message) => {
     return;
   }
 
-  const [command, ...args] = message.content.slice(prefix.length).trim().split(/\s+/);
+  const commandInput = message.content.slice(prefix.length).trim();
+  if (!commandInput) {
+    return;
+  }
+
+  const [command, ...args] = commandInput.split(/\s+/);
   const normalized = command?.toLowerCase();
+  const commandBody = commandInput.slice(command.length).trim();
 
   if (normalized === 'stats' || normalized === 'rank') {
     const mentioned = message.mentions.members.first();
@@ -247,6 +266,37 @@ client.on('messageCreate', async (message) => {
     const embed = createLeaderboardEmbed(message.guild, sortBy, entries);
     await message.channel.send({ embeds: [embed] });
 
+    return;
+  }
+
+  if (normalized === 'embed' || normalized === 'sayembed') {
+    if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
+      await message.channel.send('❌ You need the **Manage Messages** permission to use this command.');
+      return;
+    }
+
+    const [title = '', description = '', colorInput = ''] = commandBody.split('|').map((part) => part.trim());
+    if (!title || !description) {
+      await message.channel.send(
+        `Usage: \`${prefix}embed Title | Description | #5865F2\` (color is optional).`
+      );
+      return;
+    }
+
+    const color = parseEmbedColor(colorInput);
+    if (color === null) {
+      await message.channel.send('❌ Color must be a 6-digit hex value like `#5865F2`.');
+      return;
+    }
+
+    const embed = new EmbedBuilder()
+      .setTitle(title.slice(0, 256))
+      .setDescription(description.slice(0, 4096))
+      .setColor(color)
+      .setTimestamp(new Date())
+      .setFooter({ text: `Sent by ${message.member.displayName}` });
+
+    await message.channel.send({ embeds: [embed] });
     return;
   }
 });
